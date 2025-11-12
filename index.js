@@ -30,11 +30,8 @@ if (process.env.SERVER_ENV !== 'development') {
   sessionOptions.cookie = {
     sameSite: 'none',
     secure: true,
-    httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
     // For cross-origin cookies, don't set domain - browser will handle it
     // Setting domain can cause cookies not to be sent properly
-    // Note: Third-party cookies may be blocked in incognito mode by browsers
   };
 }
 
