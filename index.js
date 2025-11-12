@@ -30,7 +30,8 @@ if (process.env.SERVER_ENV !== 'development') {
   sessionOptions.cookie = {
     sameSite: 'none',
     secure: true,
-    domain: process.env.SERVER_URL,
+    // For cross-origin cookies, don't set domain - browser will handle it
+    // Setting domain can cause cookies not to be sent properly
   };
 }
 
