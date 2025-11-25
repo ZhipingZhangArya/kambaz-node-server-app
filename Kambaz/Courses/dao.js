@@ -4,12 +4,16 @@ import { v4 as uuidv4 } from "uuid";
 export default function CoursesDao(db) {
   const findAllCourses = () => {
     // return Database.courses;
-    return model.find();
+    return model.find({}, { name: 1, description: 1 });
   };
 
+  // This function is no longer used in routes, kept for backward compatibility
+  // Routes now use EnrollmentsDao.findCoursesForUser directly
   async function findCoursesForEnrolledUser(userId) {
+    // This method is deprecated - use EnrollmentsDao.findCoursesForUser instead
+    // Keeping for potential backward compatibility
     const { enrollments } = db;
-    const courses = await model.find();
+    const courses = await model.find({}, { name: 1, description: 1 });
     const enrolledCourses = courses.filter((course) =>
       enrollments.some(
         (enrollment) =>
@@ -28,11 +32,11 @@ export default function CoursesDao(db) {
   };
 
   const deleteCourse = async (courseId) => {
-    const { enrollments } = db;
-    db.enrollments = enrollments.filter(
-      (enrollment) => enrollment.course !== courseId
-    );
+    // const { courses, enrollments } = db;
     // db.courses = courses.filter((course) => course._id !== courseId);
+    // db.enrollments = enrollments.filter(
+    //   (enrollment) => enrollment.course !== courseId
+    // );
     return await model.deleteOne({ _id: courseId });
   };
 

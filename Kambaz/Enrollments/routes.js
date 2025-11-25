@@ -18,22 +18,22 @@ export default function EnrollmentsRoutes(app, db) {
       res.status(404).json({ message: `Course ${courseId} not found` });
       return;
     }
-    const enrollment = dao.enrollUserInCourse(currentUser._id, courseId);
+    const enrollment = await dao.enrollUserInCourse(currentUser._id, courseId);
     res.json(enrollment);
   };
 
-  const unenrollUser = (req, res) => {
+  const unenrollUser = async (req, res) => {
     const currentUser = req.session["currentUser"];
     if (!currentUser) {
       res.sendStatus(401);
       return;
     }
     const { courseId } = req.params;
-    const status = dao.unenrollUserFromCourse(currentUser._id, courseId);
+    const status = await dao.unenrollUserFromCourse(currentUser._id, courseId);
     res.json(status);
   };
 
-  const findEnrollmentsForUser = (req, res) => {
+  const findEnrollmentsForUser = async (req, res) => {
     let { userId } = req.params;
     if (userId === "current") {
       const currentUser = req.session["currentUser"];
@@ -43,7 +43,7 @@ export default function EnrollmentsRoutes(app, db) {
       }
       userId = currentUser._id;
     }
-    const enrollments = dao.findEnrollmentsForUser(userId);
+    const enrollments = await dao.findEnrollmentsForUser(userId);
     res.json(enrollments);
   };
 

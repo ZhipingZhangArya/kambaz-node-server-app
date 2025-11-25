@@ -76,11 +76,17 @@ export default function UserRoutes(app, db) {
   };
 
   const updateUser = async (req, res) => {
-    if (!isFaculty(req)) {
-      res.status(403).json({ message: "Only faculty or admin can update users" });
+    const currentUser = req.session["currentUser"];
+    if (!currentUser) {
+      res.status(401).json({ message: "Not authenticated" });
       return;
     }
     const { userId } = req.params;
+    // Allow users to update their own profile, or allow faculty/admin to update any user
+    if (currentUser._id !== userId && !isFaculty(req)) {
+      res.status(403).json({ message: "Only faculty or admin can update other users" });
+      return;
+    }
     const userUpdates = req.body;
     await dao.updateUser(userId, userUpdates);
     // Fetch the updated user
@@ -90,8 +96,7 @@ export default function UserRoutes(app, db) {
       return;
     }
     // Update session if updating current user
-    const currentUser = req.session["currentUser"];
-    if (currentUser && currentUser._id === userId) {
+    if (currentUser._id === userId) {
       req.session["currentUser"] = updatedUser;
     }
     res.json(updatedUser);
@@ -100,12 +105,8 @@ export default function UserRoutes(app, db) {
   // Get all users enrolled in a course
   const findUsersForCourse = async (req, res) => {
     const { courseId } = req.params;
-    const enrollments = enrollmentsDao.findEnrollmentsForCourse(courseId);
-    const userIds = enrollments.map((enrollment) => enrollment.user);
-    const users = await Promise.all(
-      userIds.map((userId) => dao.findUserById(userId))
-    );
-    res.json(users.filter((user) => user !== null));
+    const users = await enrollmentsDao.findUsersForCourse(courseId);
+    res.json(users);
   };
 
   // Create a user and enroll them in a course (faculty only)
