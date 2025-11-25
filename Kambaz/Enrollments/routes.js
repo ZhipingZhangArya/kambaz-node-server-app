@@ -5,14 +5,15 @@ export default function EnrollmentsRoutes(app, db) {
   const dao = EnrollmentsDao(db);
   const coursesDao = CoursesDao(db);
 
-  const enrollUser = (req, res) => {
+  const enrollUser = async (req, res) => {
     const currentUser = req.session["currentUser"];
     if (!currentUser) {
       res.sendStatus(401);
       return;
     }
     const { courseId } = req.params;
-    const course = coursesDao.findAllCourses().find((c) => c._id === courseId);
+    const courses = await coursesDao.findAllCourses();
+    const course = courses.find((c) => c._id === courseId);
     if (!course) {
       res.status(404).json({ message: `Course ${courseId} not found` });
       return;
