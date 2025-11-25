@@ -8,7 +8,8 @@ export default function EnrollmentsDao(db) {
 
   async function findUsersForCourse(courseId) {
     const enrollments = await model.find({ course: courseId }).populate("user");
-    return enrollments.map((enrollment) => enrollment.user);
+    // Filter out null users (in case user was deleted but enrollment still exists)
+    return enrollments.map((enrollment) => enrollment.user).filter((user) => user !== null && user !== undefined);
   }
 
   async function enrollUserInCourse(userId, courseId) {

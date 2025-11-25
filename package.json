@@ -12,7 +12,8 @@
     "embed-modules": "node scripts/embedModulesFromCollection.js",
     "check-modules": "node scripts/checkModules.js",
     "check-assignments": "node scripts/checkAssignments.js",
-    "import-assignments": "node scripts/importAssignments.js"
+    "import-assignments": "node scripts/importAssignments.js",
+    "list-collections": "node scripts/listCollections.js"
   },
   "keywords": [],
   "author": "",
