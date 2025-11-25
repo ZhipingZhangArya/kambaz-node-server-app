@@ -5,7 +5,12 @@ export default function ModulesRoutes(app, db) {
 
   const findModulesForCourse = async (req, res) => {
     const { courseId } = req.params;
+    console.log("[findModulesForCourse] Fetching modules for course:", courseId);
     const modules = await dao.findModulesForCourse(courseId);
+    console.log("[findModulesForCourse] Found modules:", modules?.length || 0);
+    if (modules && modules.length > 0) {
+      console.log("[findModulesForCourse] First module:", { _id: modules[0]._id, name: modules[0].name });
+    }
     res.json(modules);
   };
 

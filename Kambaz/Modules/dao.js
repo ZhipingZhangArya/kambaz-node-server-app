@@ -3,12 +3,21 @@ import model from "../Courses/model.js";
 
 export default function ModulesDao(db) {
   async function findModulesForCourse(courseId) {
+    console.log("[ModulesDao] Finding modules for course:", courseId);
     const course = await model.findById(courseId);
     if (!course) {
+      console.log("[ModulesDao] Course not found:", courseId);
       return [];
     }
+    console.log("[ModulesDao] Course found, modules field:", {
+      hasModules: !!course.modules,
+      modulesType: Array.isArray(course.modules) ? 'array' : typeof course.modules,
+      modulesLength: Array.isArray(course.modules) ? course.modules.length : 'N/A'
+    });
     // Ensure modules is always an array
-    return course.modules || [];
+    const modules = course.modules || [];
+    console.log("[ModulesDao] Returning modules:", modules.length);
+    return modules;
     // const { modules } = Database;
     // return modules.filter((module) => module.course === courseId);
   }
