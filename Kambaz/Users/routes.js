@@ -88,13 +88,23 @@ export default function UserRoutes(app, db) {
 
   const updateUser = async (req, res) => {
     const currentUser = req.session["currentUser"];
+    console.log("[updateUser] Session check:", {
+      hasSession: !!req.session,
+      hasCurrentUser: !!currentUser,
+      userId: currentUser?._id,
+      role: currentUser?.role,
+      cookies: req.headers.cookie ? "present" : "missing"
+    });
+    
     if (!currentUser) {
+      console.log("[updateUser] No current user in session");
       res.status(401).json({ message: "Not authenticated" });
       return;
     }
     const { userId } = req.params;
     // Allow users to update their own profile, or allow faculty/admin to update any user
     if (currentUser._id !== userId && !isFaculty(req)) {
+      console.log("[updateUser] Permission denied");
       res.status(403).json({ message: "Only faculty or admin can update other users" });
       return;
     }
@@ -106,11 +116,14 @@ export default function UserRoutes(app, db) {
       res.status(404).json({ message: `User ${userId} not found` });
       return;
     }
+    // Convert Mongoose document to plain object
+    const updatedUserObj = updatedUser.toObject ? updatedUser.toObject() : updatedUser;
     // Update session if updating current user
     if (currentUser._id === userId) {
-      req.session["currentUser"] = updatedUser;
+      req.session["currentUser"] = updatedUserObj;
+      console.log("[updateUser] Session updated for user:", updatedUserObj._id);
     }
-    res.json(updatedUser);
+    res.json(updatedUserObj);
   };
 
   // Get all users enrolled in a course
@@ -178,7 +191,17 @@ export default function UserRoutes(app, db) {
 
   const profile = (req, res) => {
     const currentUser = req.session["currentUser"];
+    console.log("[profile] Session check:", {
+      hasSession: !!req.session,
+      hasCurrentUser: !!currentUser,
+      userId: currentUser?._id,
+      role: currentUser?.role,
+      cookies: req.headers.cookie ? "present" : "missing",
+      sessionId: req.sessionID
+    });
+    
     if (!currentUser) {
+      console.log("[profile] No current user in session");
       res.sendStatus(401);
       return;
     }

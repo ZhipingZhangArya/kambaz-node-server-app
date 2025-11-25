@@ -71,12 +71,36 @@ if (process.env.SERVER_ENV !== 'development') {
   sessionOptions.cookie = {
     sameSite: 'none',
     secure: true,
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
     // For cross-origin cookies, don't set domain - browser will handle it
     // Setting domain can cause cookies not to be sent properly
+  };
+} else {
+  // Development: allow cookies in localhost
+  sessionOptions.cookie = {
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
   };
 }
 
 app.use(session(sessionOptions));
+
+// Debug middleware to log session info
+app.use((req, res, next) => {
+  if (req.path.includes('/api/users') && (req.path.includes('/profile') || req.path.includes('/update') || req.method === 'POST')) {
+    console.log(`[Session Debug] ${req.method} ${req.path}:`, {
+      hasSession: !!req.session,
+      hasCurrentUser: !!req.session?.currentUser,
+      sessionId: req.sessionID,
+      cookies: req.headers.cookie ? 'present' : 'missing',
+      origin: req.headers.origin,
+      referer: req.headers.referer
+    });
+  }
+  next();
+});
+
 app.use(express.json());
 
 UserRoutes(app, db);
