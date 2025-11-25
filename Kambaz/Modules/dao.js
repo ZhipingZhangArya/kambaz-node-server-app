@@ -4,7 +4,11 @@ import model from "../Courses/model.js";
 export default function ModulesDao(db) {
   async function findModulesForCourse(courseId) {
     const course = await model.findById(courseId);
-    return course ? course.modules : [];
+    if (!course) {
+      return [];
+    }
+    // Ensure modules is always an array
+    return course.modules || [];
     // const { modules } = Database;
     // return modules.filter((module) => module.course === courseId);
   }

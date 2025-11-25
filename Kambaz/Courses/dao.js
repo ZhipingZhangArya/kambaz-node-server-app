@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 export default function CoursesDao(db) {
   const findAllCourses = () => {
     // return Database.courses;
-    return model.find({}, { name: 1, description: 1 });
+    return model.find({}, { name: 1, description: 1, coverImage: 1, _id: 1 });
   };
 
   // This function is no longer used in routes, kept for backward compatibility
@@ -13,7 +13,7 @@ export default function CoursesDao(db) {
     // This method is deprecated - use EnrollmentsDao.findCoursesForUser instead
     // Keeping for potential backward compatibility
     const { enrollments } = db;
-    const courses = await model.find({}, { name: 1, description: 1 });
+    const courses = await model.find({}, { name: 1, description: 1, coverImage: 1, _id: 1 });
     const enrolledCourses = courses.filter((course) =>
       enrollments.some(
         (enrollment) =>
