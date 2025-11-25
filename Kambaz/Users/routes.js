@@ -5,29 +5,40 @@ export default function UserRoutes(app, db) {
   const dao = UsersDao();
   const enrollmentsDao = EnrollmentsDao(db);
 
-  // Helper function to check if current user is faculty
+  // Helper function to check if current user is faculty or admin
   const isFaculty = (req) => {
     const currentUser = req.session["currentUser"];
-    return currentUser && (currentUser.role === "FACULTY" || currentUser.role === "ADMIN");
+    const isAuthorized = currentUser && (currentUser.role === "FACULTY" || currentUser.role === "ADMIN");
+    if (currentUser && !isAuthorized) {
+      console.log(`[isFaculty] User ${currentUser._id} has role: ${currentUser.role}`);
+    }
+    return isAuthorized;
   };
 
   const createUser = async (req, res) => {
+    const currentUser = req.session["currentUser"];
+    console.log("[createUser] Current user:", currentUser ? { _id: currentUser._id, username: currentUser.username, role: currentUser.role } : "null");
+    
     if (!isFaculty(req)) {
-      res.status(403).json({ message: "Only faculty can create users" });
+      console.log("[createUser] Permission denied. User role:", currentUser?.role);
+      res.status(403).json({ message: "Only faculty or admin can create users" });
       return;
     }
+    
+    console.log("[createUser] Permission granted. Creating user...");
     const existing = await dao.findUserByUsername(req.body.username);
     if (existing) {
       res.status(400).json({ message: "Username already taken" });
       return;
     }
     const newUser = await dao.createUser(req.body);
+    console.log("[createUser] User created successfully:", newUser._id);
     res.json(newUser);
   };
 
   const deleteUser = async (req, res) => {
     if (!isFaculty(req)) {
-      res.status(403).json({ message: "Only faculty can delete users" });
+      res.status(403).json({ message: "Only faculty or admin can delete users" });
       return;
     }
     const { userId } = req.params;
@@ -109,10 +120,10 @@ export default function UserRoutes(app, db) {
     res.json(users);
   };
 
-  // Create a user and enroll them in a course (faculty only)
+  // Create a user and enroll them in a course (faculty/admin only)
   const createUserForCourse = async (req, res) => {
     if (!isFaculty(req)) {
-      res.status(403).json({ message: "Only faculty can create users" });
+      res.status(403).json({ message: "Only faculty or admin can create users" });
       return;
     }
     const { courseId } = req.params;
@@ -134,8 +145,11 @@ export default function UserRoutes(app, db) {
         return;
       }
       const currentUser = await dao.createUser(req.body);
-      req.session["currentUser"] = currentUser;
-      res.json(currentUser);
+      // Convert Mongoose document to plain object
+      const userObj = currentUser.toObject ? currentUser.toObject() : currentUser;
+      console.log("[signup] User signed up:", { _id: userObj._id, username: userObj.username, role: userObj.role });
+      req.session["currentUser"] = userObj;
+      res.json(userObj);
     } catch (error) {
       console.error("Signup error:", error);
       res.status(500).json({ message: "Unable to sign up. Please try again." });
@@ -149,8 +163,11 @@ export default function UserRoutes(app, db) {
       res.status(401).json({ message: "Unable to login. Try again later." });
       return;
     }
-    req.session["currentUser"] = currentUser;
-    res.json(currentUser);
+    // Convert Mongoose document to plain object to ensure all fields are included
+    const userObj = currentUser.toObject ? currentUser.toObject() : currentUser;
+    console.log("[signin] User signed in:", { _id: userObj._id, username: userObj.username, role: userObj.role });
+    req.session["currentUser"] = userObj;
+    res.json(userObj);
   };
 
   const signout = (req, res) => {
@@ -165,6 +182,7 @@ export default function UserRoutes(app, db) {
       res.sendStatus(401);
       return;
     }
+    console.log("[profile] Current user:", { _id: currentUser._id, username: currentUser.username, role: currentUser.role });
     res.json(currentUser);
   };
 

@@ -21,12 +21,39 @@ mongoose.connect(CONNECTION_STRING).then(() => {
 });
 
 const app = express();
-app.use(
-  cors({
-    credentials: true,
-    origin: process.env.CLIENT_URL || 'http://localhost:3000',
-  })
-);
+
+// Configure CORS to support multiple origins (for Vercel preview deployments)
+const allowedOrigins = process.env.CLIENT_URLS 
+  ? process.env.CLIENT_URLS.split(',').map(url => url.trim())
+  : [process.env.CLIENT_URL || 'http://localhost:3000'];
+
+// Also allow any Vercel preview deployment
+const corsOptions = {
+  credentials: true,
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Check if origin is in allowed list
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    
+    // Allow Vercel preview deployments (any URL containing vercel.app)
+    if (origin.includes('vercel.app')) {
+      return callback(null, true);
+    }
+    
+    // Allow localhost for development
+    if (origin.startsWith('http://localhost:') || origin.startsWith('https://localhost:')) {
+      return callback(null, true);
+    }
+    
+    callback(new Error('Not allowed by CORS'));
+  }
+};
+
+app.use(cors(corsOptions));
 
 const sessionOptions = {
   secret: process.env.SESSION_SECRET || 'kambaz',
