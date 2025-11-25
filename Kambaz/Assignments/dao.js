@@ -3,7 +3,13 @@ import { v4 as uuidv4 } from "uuid";
 
 export default function AssignmentsDao(db) {
   const findAssignmentsForCourse = async (courseId) => {
-    return await model.find({ course: courseId });
+    console.log("[AssignmentsDao] Finding assignments for course:", courseId);
+    const assignments = await model.find({ course: courseId });
+    console.log("[AssignmentsDao] Found assignments:", assignments.length);
+    if (assignments.length > 0) {
+      console.log("[AssignmentsDao] First assignment:", { _id: assignments[0]._id, title: assignments[0].title, course: assignments[0].course });
+    }
+    return assignments;
     // const { assignments } = db;
     // return assignments.filter((assignment) => assignment.course === courseId);
   };

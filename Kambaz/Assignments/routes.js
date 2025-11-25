@@ -5,7 +5,12 @@ export default function AssignmentsRoutes(app, db) {
 
   const findAssignmentsForCourse = async (req, res) => {
     const { courseId } = req.params;
+    console.log("[findAssignmentsForCourse] Fetching assignments for course:", courseId);
     const assignments = await dao.findAssignmentsForCourse(courseId);
+    console.log("[findAssignmentsForCourse] Found assignments:", assignments?.length || 0);
+    if (assignments && assignments.length > 0) {
+      console.log("[findAssignmentsForCourse] First assignment:", { _id: assignments[0]._id, title: assignments[0].title });
+    }
     res.json(assignments);
   };
 

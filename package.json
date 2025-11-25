@@ -9,7 +9,10 @@
     "dev": "npx nodemon index.js",
     "import-users": "node scripts/importUsers.js",
     "import-courses-modules": "node scripts/importCoursesWithModules.js",
-    "embed-modules": "node scripts/embedModulesFromCollection.js"
+    "embed-modules": "node scripts/embedModulesFromCollection.js",
+    "check-modules": "node scripts/checkModules.js",
+    "check-assignments": "node scripts/checkAssignments.js",
+    "import-assignments": "node scripts/importAssignments.js"
   },
   "keywords": [],
   "author": "",
