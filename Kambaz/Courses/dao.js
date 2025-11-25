@@ -1,40 +1,47 @@
+import model from "./model.js";
 import { v4 as uuidv4 } from "uuid";
 
 export default function CoursesDao(db) {
-  const findAllCourses = () => db.courses;
+  const findAllCourses = () => {
+    // return Database.courses;
+    return model.find();
+  };
 
-  const findCoursesForEnrolledUser = (userId) => {
-    const { courses, enrollments } = db;
-    return courses.filter((course) =>
+  async function findCoursesForEnrolledUser(userId) {
+    const { enrollments } = db;
+    const courses = await model.find();
+    const enrolledCourses = courses.filter((course) =>
       enrollments.some(
         (enrollment) =>
           enrollment.user === userId && enrollment.course === course._id
       )
     );
-  };
+    return enrolledCourses;
+  }
 
-  const createCourse = (course) => {
+  const createCourse = async (course) => {
     const newCourse = { ...course, _id: uuidv4() };
-    db.courses = [...db.courses, newCourse];
-    return newCourse;
+    return await model.create(newCourse);
+    // const newCourse = { ...course, _id: uuidv4() };
+    // Database.courses = [...Database.courses, newCourse];
+    // return newCourse;
   };
 
-  const deleteCourse = (courseId) => {
-    const { courses, enrollments } = db;
-    db.courses = courses.filter((course) => course._id !== courseId);
+  const deleteCourse = async (courseId) => {
+    const { enrollments } = db;
     db.enrollments = enrollments.filter(
       (enrollment) => enrollment.course !== courseId
     );
-    return { status: "ok" };
+    // db.courses = courses.filter((course) => course._id !== courseId);
+    return await model.deleteOne({ _id: courseId });
   };
 
-  const updateCourse = (courseId, courseUpdates) => {
-    const course = db.courses.find((c) => c._id === courseId);
-    if (!course) {
-      return null;
-    }
-    Object.assign(course, courseUpdates);
-    return course;
+  const updateCourse = async (courseId, courseUpdates) => {
+    return await model.updateOne({ _id: courseId }, { $set: courseUpdates });
+    // const { courses } = Database;
+    // const course = courses.find((course) => course._id === courseId);
+    // Object.assign(course, courseUpdates);
+    // return course;
   };
 
   return {
